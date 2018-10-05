@@ -1,0 +1,144 @@
+swagger: "2.0"
+info:
+  version: "1.0"
+  title: "Funds Transfer Service"
+schemes:
+- http
+paths:
+  '/account':
+    post:
+      summary: Create new account
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: state
+        in: body
+        description: State of account to create
+        required: true
+        schema:
+          $ref: '#/definitions/AccountState'
+      responses:
+        201:
+          description: Account successfully created
+          headers:
+            Location:
+              description: Relative path to created account
+              type: string
+          schema:
+            $ref: '#/definitions/AccountState'
+        400:
+          description: Exception during account creation
+          schema:
+            $ref: '#/definitions/ExceptionMessage'
+        500:
+          description: Internal service exception
+  '/account/{accountId}':
+    get:
+      summary: Retrieve account state
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: accountId
+        in: path
+        description: Identifier of account to fetch
+        type: string
+        required: true
+      responses:
+        200:
+          description: Account sucessfully retrieved
+          schema:
+            $ref: '#/definitions/AccountState'
+        404:
+          description: Account with specified identifier not found
+          schema:
+            $ref: '#/definitions/ExceptionMessage'
+        500:
+          description: Internal service exception
+  '/transfer/{senderId}/to/{receiverId}':
+    post:
+      summary: Perform funds transfer between accounts
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: senderId
+        in: path
+        description: Sender account identifier
+        type: string
+        required: true
+      - name: receiverId
+        in: path
+        description: Receiver account identifier
+        type: string
+        required: true
+      - name: amount
+        in: query
+        description: Amount to transfer
+        type: number
+        required: true
+      responses:
+        200:
+          description: Transfer successfully performed
+          schema:
+            $ref: '#/definitions/TransferReceipt'
+        404:
+          description: Account with specified identifier not found
+          schema:
+            $ref: '#/definitions/ExceptionMessage'
+        500:
+          description: Internal service exception
+definitions:
+  AccountState:
+    type: object
+    properties:
+      account_id:
+        type: string
+        description: Account identifier
+      blocked:
+        type: boolean
+        description: Blocked account flag
+      balance:
+        type: number
+        description: Account balance
+        example: 101.25
+  TransferReceipt:
+    type: object
+    properties:
+      sender_id:
+        type: string
+        description: Sender account identifier
+      receiver_id:
+        type: string
+        description: Receiver account identifier
+      amount:
+        type: number
+        description: Transferred amount
+  ExceptionMessage:
+    type: object
+    properties:
+      reason:
+        description: Reason of the exception
+        type: string
+        enum:
+        - ACCOUNT_NOT_FOUND
+        - NOT_ENOUGH_FUNDS
+        - ACCOUNT_IS_BLOCKED
+        - INVALID_PARAM
+        - UNKNOWN
+      values:
+        description: Values which caused the exception
+        type: string
+        items:
+          type: object
+
+
+
+
+
+
+
